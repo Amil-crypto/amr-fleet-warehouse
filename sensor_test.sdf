@@ -1,0 +1,43 @@
+<sdf version="1.9">
+  <world name="sensor_test">
+
+    <plugin filename="libgz-sim-physics-system.so"
+            name="gz::sim::systems::Physics"/>
+
+    <plugin filename="libgz-sim-sensors-system.so"
+            name="gz::sim::systems::Sensors"/>
+
+    <plugin filename="libgz-sim-scene-broadcaster-system.so"
+            name="gz::sim::systems::SceneBroadcaster"/>
+
+    <model name="sensor_test_robot">
+      <static>true</static>
+
+      <link name="base_link">
+        <sensor name="test_lidar" type="gpu_lidar">
+          <topic>/test/scan</topic>
+          <update_rate>10</update_rate>
+
+          <lidar>
+            <scan>
+              <horizontal>
+                <samples>360</samples>
+                <resolution>1</resolution>
+                <min_angle>-3.14159</min_angle>
+                <max_angle>3.14159</max_angle>
+              </horizontal>
+            </scan>
+
+            <range>
+              <min>0.1</min>
+              <max>10.0</max>
+              <resolution>0.01</resolution>
+            </range>
+          </lidar>
+        </sensor>
+      </link>
+    </model>
+
+  </world>
+</sdf>
+
