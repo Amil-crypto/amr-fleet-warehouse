@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Edge AI AMR Fleet Dashboard</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+        }
+
+        header {
+            padding: 18px 25px;
+            background: #1f2937;
+            border-bottom: 1px solid #374151;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+        }
+
+        header p {
+            margin: 5px 0 0;
+            color: #9ca3af;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .card {
+            background: #1f2937;
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #374151;
+        }
+
+        .card-title {
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .card-value {
+            font-size: 25px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+
+        .main {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+            padding: 0 20px 20px;
+        }
+
+        .warehouse-card {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .warehouse {
+            position: relative;
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            background:
+                linear-gradient(#374151 1px, transparent 1px),
+                linear-gradient(90deg, #374151 1px, transparent 1px);
+            background-size: 5% 5%;
+            border: 3px solid #9ca3af;
+            overflow: hidden;
+        }
+
+        .warehouse-label {
+            margin-bottom: 12px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .robot {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #22c55e;
+            border: 3px solid white;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: bold;
+            transition: left 0.3s linear, top 0.3s linear;
+        }
+
+        .robot.waiting {
+            background: #f59e0b;
+        }
+
+        .robot.completed {
+            background: #3b82f6;
+        }
+
+        .target {
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            border: 2px dashed #60a5fa;
+            transform: translate(-50%, -50%);
+        }
+
+        .robot-table {
+            background: #1f2937;
+            border: 1px solid #374151;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 11px 5px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+            font-size: 13px;
+        }
+
+        th {
+            color: #9ca3af;
+        }
+
+        .active {
+            color: #22c55e;
+        }
+
+        .unknown {
+            color: #f59e0b;
+        }
+
+        @media (max-width: 900px) {
+            .stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .main {
+                grid-template-columns: 1fr;
+            }
+        }
+.task-panel {
+    margin: 20px;
+    padding: 20px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+}
+
+.task-panel h2 {
+    margin-top: 0;
+}
+
+.task-inputs {
+    display: flex;
+    gap: 15px;
+    align-items: end;
+    flex-wrap: wrap;
+}
+
+.task-inputs div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.task-inputs label {
+    color: #9ca3af;
+    font-size: 13px;
+}
+
+.task-inputs input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #4b5563;
+    background: #111827;
+    color: white;
+    width: 120px;
+}
+
+.task-inputs button {
+    padding: 11px 18px;
+    border: none;
+    border-radius: 7px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+#taskResult {
+    margin-top: 15px;
+    padding: 12px;
+    background: #111827;
+    border-radius: 7px;
+    color: #9ca3af;
+}
+    </style>
+</head>
+
+<body>
+
+<header>
+    <h1>EDGE AI AMR FLEET MANAGEMENT</h1>
+    <p>Distributed Autonomous Mobile Robot Coordination</p>
+</header>
+<section class="task-panel">
+
+    <h2>Assign New Task</h2>
+
+    <div class="task-inputs">
+
+        <div>
+            <label>Target X (m)</label>
+            <input
+                type="number"
+                id="targetX"
+                value="20"
+                step="0.5"
+            >
+        </div>
+
+        <div>
+            <label>Target Y (m)</label>
+            <input
+                type="number"
+                id="targetY"
+                value="-10"
+                step="0.5"
+            >
+        </div>
+
+        <div>
+            <label>Priority</label>
+
+            <select id="priority">
+                <option value="1">Low</option>
+                <option value="2" selected>Normal</option>
+                <option value="3">High</option>
+            </select>
+        </div>
+
+        <button onclick="assignTask()">
+            🚀 ASSIGN TASK
+        </button>
+
+    </div>
+
+    <div id="taskResult">
+        No new task assigned.
+    </div>
+
+</section>
+<section class="stats">
+
+    <div class="card">
+        <div class="card-title">AMRs</div>
+        <div class="card-value" id="amrCount">6 / 6</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Active Robots</div>
+        <div class="card-value" id="activeCount">0</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Safety Events</div>
+        <div class="card-value">0</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Warehouse</div>
+        <div class="card-value">30 × 40 m</div>
+    </div>
+
+</section>
+
+<section class="main">
+
+    <div class="warehouse-card">
+
+        <div class="warehouse-label">
+            Warehouse — Live Fleet Position
+        </div>
+
+        <div class="warehouse" id="warehouse">
+
+            <div class="target" style="left: 92%; top: 25%;"></div>
+            <div class="target" style="left: 75%; top: 75%;"></div>
+            <div class="target" style="left: 67%; top: 20%;"></div>
+            <div class="target" style="left: 25%; top: 20%;"></div>
+            <div class="target" style="left: 8%; top: 75%;"></div>
+            <div class="target" style="left: 50%; top: 80%;"></div>
+
+            <div class="robot" id="robot1">R1</div>
+            <div class="robot" id="robot2">R2</div>
+            <div class="robot" id="robot3">R3</div>
+            <div class="robot" id="robot4">R4</div>
+            <div class="robot" id="robot5">R5</div>
+            <div class="robot" id="robot6">R6</div>
+
+        </div>
+
+    </div>
+
+    <div class="robot-table">
+
+        <h3>Fleet Status</h3>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>Robot</th>
+                    <th>X</th>
+                    <th>Y</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="robotTable">
+            </tbody>
+
+        </table>
+
+    </div>
+
+</section>
+
+<script>
+
+const robots = {};
+
+for (let i = 1; i <= 6; i++) {
+    robots[i] = {
+        x: 0,
+        y: 0,
+        status: "UNKNOWN"
+    };
+}
+
+function updateDashboard(data) {
+
+    let active = 0;
+
+    for (let i = 1; i <= 6; i++) {
+
+        if (!data[i]) {
+            continue;
+        }
+
+        robots[i].x = data[i].x;
+        robots[i].y = data[i].y;
+        robots[i].status = "ACTIVE";
+
+        active++;
+
+        /*
+         * Warehouse coordinate mapping.
+         *
+         * X range: -15 to +15
+         * Y range: -20 to +20
+         */
+
+        let left =
+            ((robots[i].x + 15) / 30) * 100;
+
+        let top =
+            ((20 - robots[i].y) / 40) * 100;
+
+        left = Math.max(2, Math.min(98, left));
+        top = Math.max(2, Math.min(98, top));
+
+        const robotElement =
+            document.getElementById("robot" + i);
+
+        robotElement.style.left = left + "%";
+        robotElement.style.top = top + "%";
+
+        robotElement.className = "robot active";
+    }
+
+    document.getElementById("activeCount").innerText = active;
+
+    updateTable();
+}
+
+function updateTable() {
+
+    const table =
+        document.getElementById("robotTable");
+
+    table.innerHTML = "";
+
+    for (let i = 1; i <= 6; i++) {
+
+        const robot = robots[i];
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td>Robot ${i}</td>
+            <td>${robot.x.toFixed(2)}</td>
+            <td>${robot.y.toFixed(2)}</td>
+            <td class="active">${robot.status}</td>
+        `;
+
+        table.appendChild(row);
+    }
+}
+
+/*
+ * Demo data for now.
+ *
+ * We will replace this with the
+ * real ROS 2 WebSocket connection
+ * in the next step.
+ */
+
+updateDashboard({
+    1: {x: 0.67, y: 1.03},
+    2: {x: 2.52, y: -1.28},
+    3: {x: -3.17, y: 0.20},
+    4: {x: -0.13, y: 2.77},
+    5: {x: 1.62, y: -3.22},
+    6: {x: 4.59, y: -4.67}
+});
+function assignTask() {
+
+    const x = parseFloat(
+        document.getElementById("targetX").value
+    );
+
+    const y = parseFloat(
+        document.getElementById("targetY").value
+    );
+
+    if (isNaN(x) || isNaN(y)) {
+        document.getElementById("taskResult").innerText =
+            "Please enter valid coordinates.";
+        return;
+    }
+
+    const task = {
+        x: x,
+        y: y,
+        priority: 1
+    };
+
+    fetch("/task", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(task)
+    })
+    .then(response => response.json())
+    .then(data => {
+
+        document.getElementById("taskResult").innerHTML =
+            `<strong>Task Sent to ROS 2</strong><br>
+             Target: (${x.toFixed(1)}, ${y.toFixed(1)})<br>
+             ${data.message}`;
+
+    })
+    .catch(error => {
+
+        document.getElementById("taskResult").innerHTML =
+            `<strong>Connection Error</strong><br>
+             Dashboard server is not connected to ROS 2.`;
+
+        console.error(error);
+    });
+}
+</script>
+
+</body>
+</html>

@@ -21,6 +21,9 @@ setup(
             os.path.join('share', package_name, 'msg'),
             glob('msg/*.msg')
         ),
+        (
+            os.path.join('lib', package_name), ['amr_fleet/travel_time_model.joblib']
+        ),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -38,7 +41,12 @@ setup(
             'fleet_state = amr_fleet.fleet_state:main',
             'spatial_mutex = amr_fleet.spatial_mutex:main',
             'mission_manager = amr_fleet.mission_manager:main',
+            'dashboard_task_receiver = amr_fleet.dashboard_task_receiver:main',
+            'dashboard_server = amr_fleet.dashboard_server:main',
             'mission_controller = amr_fleet.mission_controller:main',
+            'safety_supervisor = amr_fleet.safety_supervisor:main',
+            'gazebo_pose_bridge = amr_fleet.gazebo_pose_bridge:main',
+            'dashboard_node = amr_fleet.dashboard_node:main',
         ],
     },
 )
